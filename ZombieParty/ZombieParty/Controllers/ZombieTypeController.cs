@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using ZombieParty.Models;
 using ZombieParty.Models.Data;
 using ZombieParty.ViewModels;
@@ -59,6 +60,34 @@ namespace ZombieParty.Controllers
 
             return this.View(zombieType);
         }
+        public IActionResult Edit(int id)
+        {
+            ZombieTypeVM zombieVM = new ZombieTypeVM();
+            zombieVM.ZombieType = _baseDonnees.ZombieTypes.Find(id);
+           
 
+            return View(zombieVM);
+            
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(ZombieTypeVM zombieVM)
+        {
+            //Si le modèle est valide le zombie est modifié et nous sommes redirigé vers index.
+            if (ModelState.IsValid)
+            {
+                _baseDonnees.Zombies.Update(zombieVM.ZombieType);
+                _baseDonnees.SaveChanges();
+                TempData["Success"] = $"Zombie {zombieVM.Zombie.Name} has been modified";
+                return this.RedirectToAction("Index");
+            }
+            zombieVM.ZombieTypeSelectList = _baseDonnees.ZombieTypes.Select(t => new SelectListItem
+            {
+                Text = t.TypeName,
+                Value = t.Id.ToString()
+            }).OrderBy(t => t.Text);
+
+            return View(zombieVM);
+        }
     }
 }
